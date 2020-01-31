@@ -25,6 +25,12 @@ const T6 = 500
 const T7 = 500
 const T8 = 1000
 
+// v3 constants
+const STX_v3 = 0xFE
+const ESC_v3 = 0xFD
+const TSTX_v3 = 0xFC
+const TESC_v3 = 0xFB
+
 type errorCom struct {
 	p bool
 	c byte
@@ -40,7 +46,7 @@ func Send(data []byte, responseLength int) (r []byte, err errorCom) {
 		lrc ^= data[i]
 	}
 
-	sendData := append(append([]byte{STX, length}, data...), lrc)
+	sendData := append(append([]byte{STX_v3, length}, data...), lrc)
 
 	//println(sendData)
 	r, err = writeCommand(sendData, responseLength)
@@ -49,6 +55,42 @@ func Send(data []byte, responseLength int) (r []byte, err errorCom) {
 }
 
 func writeCommand(data []byte, responseLength int) (r []byte, err errorCom) {
+	sessionLog.PrintL(LOG_METOD_START_INT, "--WRITE-COMMAND-- Старт  writeCommand")
+	c := &serial.Config{Name: "COM3", Baud: 115200, ReadTimeout: time.Second * 5}
+	s, e := serial.OpenPort(c)
+	if e != nil {
+		sessionLog.PrintL(LOG_ERROR, "--WRITE-COMMAND-- Cannot open COM port")
+		sessionLog.PrintL(LOG_METOD_RESULT, "--WRITE-COMMAND-- Стоп  writeCommand")
+		return nil, errorCom{false, 0}
+	}
+	defer s.Close()
+	sessionLog.PrintL(LOG_METOD_INSIDE, "--WRITE-COMMAND-- Порт открыт")
+	attempts := 10
+
+	//  Отправляем команду
+	for attempts > 0 {
+		sessionLog.PrintL(LOG_METOD_INSIDE, "--WRITE-COMMAND-- Попытка "+fmt.Sprint(11-attempts))
+		attempts--
+		n, err := s.Write([]byte{ENC})
+		if err != nil {
+			sessionLog.PrintL(LOG_ERROR, "--WRITE-COMMAND-- Ошибка записи в COM порт")
+			continue
+		}
+		sessionLog.PrintL(LOG_PORT_DATA, "--COM-PORT-SEND-- Отправлен ENC "+fmt.Sprint([]byte{ENC}))
+
+		buf := make([]byte, 1024)
+		n, err = s.Read(buf)
+		//commandSent := false
+		if n > 0 {
+
+		}
+		return buf, errorCom{}
+	}
+	return []byte{}, errorCom{}
+
+}
+
+func writeCommandV2(data []byte, responseLength int) (r []byte, err errorCom) {
 	sessionLog.PrintL(LOG_METOD_START_INT, "--WRITE-COMMAND-- Старт  writeCommand")
 	c := &serial.Config{Name: "COM3", Baud: 115200, ReadTimeout: time.Second * 5}
 	s, e := serial.OpenPort(c)

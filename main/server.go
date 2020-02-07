@@ -9,10 +9,22 @@ func main() {
 	sessionLog.NewSessionLogger()
 	log.Println("Start!")
 
-	status, err := GetECRStatus()
-	if err.p {
+	atoll, err := NewAtollV3()
+	if err != nil {
 		log.Fatalln(err)
+		return
 	}
 
-	log.Println(status)
+	sendData := []byte{0xc1, 5, 0x10, 0x97, 0x4c, 0x31, 0x32, 0x33}
+
+	res, _ := atoll.Send(&sendData)
+
+	log.Println(res)
+
+	//status, err := GetECRStatus()
+	//if err.p {
+	//	log.Fatalln(err)
+	//}
+	//
+	//log.Println(status)
 }

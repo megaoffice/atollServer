@@ -25,12 +25,6 @@ const T6 = 500
 const T7 = 500
 const T8 = 1000
 
-// v3 constants
-const STX_v3 = 0xFE
-const ESC_v3 = 0xFD
-const TSTX_v3 = 0xFC
-const TESC_v3 = 0xFB
-
 type errorCom struct {
 	p bool
 	c byte
@@ -46,7 +40,7 @@ func Send(data []byte, responseLength int) (r []byte, err errorCom) {
 		lrc ^= data[i]
 	}
 
-	sendData := append(append([]byte{STX_v3, length}, data...), lrc)
+	sendData := append(append([]byte{STX, length}, data...), lrc)
 
 	//println(sendData)
 	r, err = writeCommand(sendData, responseLength)
@@ -54,7 +48,7 @@ func Send(data []byte, responseLength int) (r []byte, err errorCom) {
 	return r, err
 }
 
-func writeCommand(data []byte, responseLength int) (r []byte, err errorCom) {
+func writeCommandV3(data []byte, responseLength int) (r []byte, err errorCom) {
 	sessionLog.PrintL(LOG_METOD_START_INT, "--WRITE-COMMAND-- Старт  writeCommand")
 	c := &serial.Config{Name: "COM3", Baud: 115200, ReadTimeout: time.Second * 5}
 	s, e := serial.OpenPort(c)
@@ -90,7 +84,7 @@ func writeCommand(data []byte, responseLength int) (r []byte, err errorCom) {
 
 }
 
-func writeCommandV2(data []byte, responseLength int) (r []byte, err errorCom) {
+func writeCommand(data []byte, responseLength int) (r []byte, err errorCom) {
 	sessionLog.PrintL(LOG_METOD_START_INT, "--WRITE-COMMAND-- Старт  writeCommand")
 	c := &serial.Config{Name: "COM3", Baud: 115200, ReadTimeout: time.Second * 5}
 	s, e := serial.OpenPort(c)
